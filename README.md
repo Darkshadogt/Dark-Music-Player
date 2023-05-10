@@ -13,18 +13,28 @@ CustomTkinter: [https://github.com/TomSchimansky/CustomTkinter](https://github.c
 
 **Help:**
 
+
+
 -Add playlists and songs using the settings button
+
 
 -Must have a playlist before adding a song
 
+
 -Different functions including repeat and shuffle
 
+
 -Having repeat and shuffle both on is the same as having repeat on
+
 
 -Imported songs save in a file
 
 
 **Icon:**
+
+![music](https://github.com/Darkshadogt/Dark-Auto/assets/122583206/fd8304f4-9f08-4669-ba8c-9389dd2f7ec6)
+
+App Icon: [<a href="https://www.flaticon.com/free-icons/music" title="music icons">Music icons created by Freepik - Flaticon</a>](<a href="https://www.flaticon.com/free-icons/music" title="music icons">Music icons created by Freepik - Flaticon</a>)
 
 Play Button Image: [<a href="https://www.flaticon.com/free-icons/play" title="play icons">Play icons created by Freepik - Flaticon</a>](<a href="https://www.flaticon.com/free-icons/play" title="play icons">Play icons created by Freepik - Flaticon</a>)
 
