@@ -7,7 +7,6 @@ import threading
 import json
 import os
 import pygame
-import music_player
 
 ctk.set_default_color_theme("dark-blue")
 ctk.set_appearance_mode("dark")
@@ -20,27 +19,38 @@ class Interface(ctk.CTk):
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
         
+        
+        filedir = os.path.dirname(__file__)
+        play_image = os.path.join(filedir, "Play_Button.png")
+        pause_image = os.path.join(filedir, "Pause_Button.png")
+        left_image = os.path.join(filedir, "Left_Button.png")
+        right_image = os.path.join(filedir, "Right_Button.png")
+        search_image = os.path.join(filedir, "Search_Button.png")
+        setting_image = os.path.join(filedir, "Settings_Button.png")
+        help_image = os.path.join(filedir, "Help_Button.png")
+        
         #Creating variables for the images of the buttons
-        self.play_button = ctk.CTkImage(Image.open("Play_Button.png"))
-        self.pause_button = ctk.CTkImage(Image.open("Pause_Button.png"))
-        self.left_button = ctk.CTkImage(Image.open("Left_Button.png"))
-        self.right_button = ctk.CTkImage(Image.open("Right_Button.png"))
-        self.search_button = ctk.CTkImage(Image.open("Search_Button.png"))
-        self.settings_button = ctk.CTkImage(Image.open("Settings_Button.png"))
-        self.help_button = ctk.CTkImage(Image.open("Help_Button.png"))
+        self.play_button = ctk.CTkImage(Image.open(play_image))
+        self.pause_button = ctk.CTkImage(Image.open(pause_image))
+        self.left_button = ctk.CTkImage(Image.open(left_image))
+        self.right_button = ctk.CTkImage(Image.open(right_image))
+        self.search_button = ctk.CTkImage(Image.open(search_image))
+        self.settings_button = ctk.CTkImage(Image.open(setting_image))
+        self.help_button = ctk.CTkImage(Image.open(help_image))
 
         #User's playlist
         self.playlist_name = []
         self.playlists = {}
         self.playlist_song = []
         self.current_song = None
-        
+        self.user_file_path = None
         #Variable to keep track of the current playlist selection
         self.playlist_selection = ctk.StringVar()
 
         #Variable to keep track of the current song selection
         self.song_selection = StringVar()
-
+        self.song_label = ctk.StringVar()
+        
         #Variable to keep track of the slider
         self.slider = ctk.IntVar()
         
@@ -73,13 +83,23 @@ class Interface(ctk.CTk):
         #Used to set the end events of a song
         self.song_ended = pygame.USEREVENT+1
         pygame.mixer.music.set_endevent(self.song_ended)
-
-        #If there is data in the file, it loads them
-        if os.path.getsize("user_playlist.py") != 0:
-            with open("user_playlist.py") as user_file:
-                data = user_file.read()
-                self.playlists = json.loads(data)
-                self.playlist_name = list(self.playlists.keys())
+        
+        home_dir = os.path.expanduser("~")
+        self.user_file_path = os.path.join(home_dir, "user_playlist.py")
+        
+        try:
+            #If there is data in the file, it loads them
+            if os.path.getsize(self.user_file_path) != 0:
+                with open(self.user_file_path) as user_file:
+                    data = user_file.read()
+                    self.playlists = json.loads(data)
+                    self.playlist_name = list(self.playlists.keys())
+                    song = list(self.playlists.values())
+                    self.playlist_song = []
+                    for x in song:
+                        self.playlist_song.append(x[0])
+        except Exception:
+            pass
 
         if len(self.playlists) != 0:
             self.playlist_selection.set(self.playlist_name[0])
@@ -159,112 +179,6 @@ class Interface(ctk.CTk):
         help_button = ctk.CTkButton(self, width=50, image=self.help_button, text="", command=self.help_page)
         help_button.place(x=0, y=545)
     
-    #Used to check the entry for the search bar
-    def check_input(self, input):
-        if len(input) < 39:
-            return(True)
-        else:
-            return(False)
-    
-    #Plays the song
-    def play_songs(self):
-        if self.check_any_song() == True:
-            #Threads to play the music
-            play_music = threading.Thread(target=music_player.MusicPlayer.play_song, args=(self,))
-            pause_music = threading.Thread(target=music_player.MusicPlayer.pause_song, args=(self,))
-            
-            #If song isn't playing and there are songs in the playlist, it plays
-            if self.playing == False:
-                play_music.start()
-                play_button.configure(image=self.pause_button)
-            #If song is playing, it pauses the song
-            else:
-                pause_music.start()
-                play_button.configure(image=self.play_button)
-        else:
-            messagebox.showerror("Empty Song List", "Please add songs before playing")
-    
-    #Plays the next song
-    def play_next(self):
-        music_player.MusicPlayer.play_next_song(self)
-    
-    #Checks if there are songs in any playlist
-    def check_any_song(self):
-        song = False
-        if len(self.playlists) > 0:
-            for x in self.playlists:
-                if len(self.playlists[x]) > 0:
-                    song = True
-        return(song)
-    
-    #Plays the song before the current one
-    def play_last(self):
-        music_player.MusicPlayer.play_last_song(self)
-    
-    #Searches the song user asked for
-    def search_song(self):
-        #Calls the function to change the song list box
-        self.user_song_search = True
-        self.middle()
-    
-    #If the entry is clear, songs in playlist reappears
-    def reset_middlebox(self, *args):
-        if self.search_input.get() == "":
-            self.middle()
-    
-    #Checking whether the repeat is on or off
-    def turn_repeat_on(self):
-        if self.repeat_on == False:
-            self.repeat_on = True
-        else:
-            self.repeat_on = False
-    
-    #Checks whether the shuffle is on or off
-    def turn_shuffle_on(self):
-        if self.shuffle_on == False:
-            self.shuffle_on = True
-        else:
-            self.shuffle_on = False
-
-    #Checks if the song ended or not
-    def check_song_status(self):
-        for event in pygame.event.get():
-            if event.type == self.song_ended:
-                music_player.MusicPlayer.play_next_song(self)
-                
-        #Keeps checking if song ended or not
-        check_end = threading.Thread(target=self.after, args=(100, self.check_song_status))
-        check_end.start()
-    
-    #Changes the position of the song according to the timer user dragged
-    def drag_slider(self, time):
-        #Check if songs exist
-        if self.check_any_song() == True:
-            music_player.MusicPlayer.set_song_timer(self, time)
-    
-    #Displays how to use the music player
-    def help_page(self):
-        #Creates the new window
-        help_window = ctk.CTkToplevel(self)
-        help_window.title("Help")
-        help_window.geometry("400x300")
-        help_window.resizable(False, False)
-
-        help_textbox = ctk.CTkTextbox(help_window, width=400, height=290)
-        help_textbox.place(x=0, y=10)
-
-        help_textbox.insert(END, "Short explanation on how to use the music player:\n")
-        help_textbox.insert(END, "-Inside the settings button, you can select, add, and remove playlists to songs.\n")
-        help_textbox.insert(END, "-In order to add a song, you need to add a playlist to add the song into.\n")
-        help_textbox.insert(END, "-Adding a song will open a file dialog which asks you to select an music file to play.\n")
-        help_textbox.insert(END, "-There are buttons you can use.\n")
-        help_textbox.insert(END, "-There are currently, shuffle, repeat, play, play last song, and play next song.\n")
-        help_textbox.insert(END, "-The box in the middle displays the songs you have in your current playlist.\n")
-        help_textbox.insert(END, "-The search button on the top allows you to see which song is in your playlist.\n")
-        help_textbox.insert(END, "-There is also a library menu in the settings window which shows you all the songs currently in all the playlists.\n")
-
-        help_textbox.configure(state=DISABLED)
-    
     #Popup window for settings
     def settings_window(self):
         
@@ -312,8 +226,8 @@ class Interface(ctk.CTk):
         current_song_label = ctk.CTkLabel(song_tab, text="Current song: ", text_color="#3a7ebf", font=("Arial", 15, "bold"))
         current_song_label.place(x=5, y=20)
         
-        self.current_song_word_label = ctk.CTkLabel(song_tab, width=150, text="", text_color="#3a7ebf", font=("Arial", 15, "bold"), anchor=CENTER)
-        self.current_song_word_label.place(x=125, y=20)
+        current_songname_label = ctk.CTkLabel(song_tab, width=150, text_color="#3a7ebf", textvariable=self.song_label, font=("Arial", 15, "bold"), anchor=CENTER)
+        current_songname_label.place(x=125, y=20)
         
         add_song = ctk.CTkButton(song_tab, text="Add Song", command=self.add_song)
         add_song.place(x=5, y=120)
@@ -326,6 +240,117 @@ class Interface(ctk.CTk):
 
         cancel_button = ctk.CTkButton(setting_window, text="Cancel", command=self.cancel_changes)
         cancel_button.place(x=165, y=215)
+
+    #Used to check the entry for the search bar
+    def check_input(self, input):
+        if len(input) < 39:
+            return(True)
+        else:
+            return(False)
+    
+    #Plays the song
+    def play_songs(self):
+        import music_player
+        if self.check_any_song() == True:
+            #Threads to play the music
+            play_music = threading.Thread(target=music_player.MusicPlayer.play_song, args=(self,))
+            pause_music = threading.Thread(target=music_player.MusicPlayer.pause_song, args=(self,))
+            self.check_song_status()
+            #If song isn't playing and there are songs in the playlist, it plays
+            if self.playing == False:
+                play_music.start()
+                play_button.configure(image=self.pause_button)
+            #If song is playing, it pauses the song
+            else:
+                pause_music.start()
+                play_button.configure(image=self.play_button)
+        else:
+            messagebox.showerror("Empty Song List", "Please add songs before playing")
+    
+    #Plays the next song
+    def play_next(self):
+        import music_player
+        music_player.MusicPlayer.play_next_song(self)
+    
+    #Checks if there are songs in any playlist
+    def check_any_song(self):
+        song = False
+        if len(self.playlists) > 0:
+            for x in self.playlists:
+                if len(self.playlists[x]) > 0:
+                    song = True
+        return(song)
+    
+    #Plays the song before the current one
+    def play_last(self):
+        import music_player
+        music_player.MusicPlayer.play_last_song(self)
+    
+    #Searches the song user asked for
+    def search_song(self):
+        #Calls the function to change the song list box
+        self.user_song_search = True
+        self.middle()
+    
+    #If the entry is clear, songs in playlist reappears
+    def reset_middlebox(self, *args):
+        if self.search_input.get() == "":
+            self.middle()
+    
+    #Checking whether the repeat is on or off
+    def turn_repeat_on(self):
+        if self.repeat_on == False:
+            self.repeat_on = True
+        else:
+            self.repeat_on = False
+    
+    #Checks whether the shuffle is on or off
+    def turn_shuffle_on(self):
+        if self.shuffle_on == False:
+            self.shuffle_on = True
+        else:
+            self.shuffle_on = False
+
+    #Checks if the song ended or not
+    def check_song_status(self):
+        import music_player
+        for event in pygame.event.get():
+            if event.type == self.song_ended:
+                music_player.MusicPlayer.play_next_song(self)
+
+        #Keeps checking if song ended or not
+        check_end = threading.Thread(target=self.after, args=(100, self.check_song_status))
+        check_end.start()
+    
+    #Changes the position of the song according to the timer user dragged
+    def drag_slider(self, time):
+        import music_player
+        #Check if songs exist
+        if self.check_any_song() == True:
+            music_player.MusicPlayer.set_song_timer(self, time)
+    
+    #Displays how to use the music player
+    def help_page(self):
+        #Creates the new window
+        help_window = ctk.CTkToplevel(self)
+        help_window.title("Help")
+        help_window.geometry("400x300")
+        help_window.resizable(False, False)
+
+        help_textbox = ctk.CTkTextbox(help_window, width=400, height=290)
+        help_textbox.place(x=0, y=10)
+
+        help_textbox.insert(END, "Short explanation on how to use the music player:\n")
+        help_textbox.insert(END, "-Inside the settings button, you can select, add, and remove playlists to songs.\n")
+        help_textbox.insert(END, "-In order to add a song, you need to add a playlist to add the song into.\n")
+        help_textbox.insert(END, "-Adding a song will open a file dialog which asks you to select an music file to play.\n")
+        help_textbox.insert(END, "-There are buttons you can use.\n")
+        help_textbox.insert(END, "-There are currently, shuffle, repeat, play, play last song, and play next song.\n")
+        help_textbox.insert(END, "-The box in the middle displays the songs you have in your current playlist.\n")
+        help_textbox.insert(END, "-The search button on the top allows you to see which song is in your playlist.\n")
+        help_textbox.insert(END, "-There is also a library menu in the settings window which shows you all the songs currently in all the playlists.\n")
+
+        help_textbox.configure(state=DISABLED)
 
     #Command to add a playlist
     def add_playlist(self):
@@ -374,6 +399,10 @@ class Interface(ctk.CTk):
         #Changing the current playlist text label everytime playlist is changed
         current_playlist_word_label.configure(text=self.playlist_selection.get())
     
+    def current_song_label_change(self):
+        if self.current_song != None:
+            self.song_label.set(self.current_song[0])
+        
     #Changes the middle box based on the selection of the playlist
     def update_middle_box(self, *args):
         #Deleting everything in the middlebox
@@ -428,7 +457,6 @@ class Interface(ctk.CTk):
             elif found:
                 found = False
 
-    
     #Function for ok button in settings
     def update_changes(self):
         song_change = False
@@ -463,15 +491,11 @@ class Interface(ctk.CTk):
                 self.playlist_selection.set(self.playlist_name[0])
             else:
                 self.middlebox.delete(0, END)
-        
-        #Fixing the current song label
-        if self.song_selection.get() not in self.playlist_song:
-            self.song_selection.set("")
 
         #Saving user's playlist and songs into a file
-        with open("user_playlist.py", "w") as user_file:
+        with open(self.user_file_path, "w") as user_file:
             user_file.write(json.dumps(self.playlists))
-        
+
         #Closes the setting window
         setting_window.destroy()
     
@@ -484,10 +508,3 @@ class Interface(ctk.CTk):
         #Closes the setting window
         setting_window.destroy()
 
-if __name__ == "__main__":
-    app = Interface()
-    app.window()
-    app.top()
-    app.middle()
-    app.bottom_bar()
-    app.mainloop()
