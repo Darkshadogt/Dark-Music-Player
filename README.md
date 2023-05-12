@@ -10,6 +10,7 @@ CustomTkinter: [https://github.com/TomSchimansky/CustomTkinter](https://github.c
 
 **Note: There might be a delay loading the music player**
 
+**Note: Must have write permission for main directory or else playlists and songs won't save**
 
 **Help:**
 
