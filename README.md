@@ -4,6 +4,8 @@ Music Player made with Python
 
 CustomTkinter: [https://github.com/TomSchimansky/CustomTkinter](https://github.com/TomSchimansky/CustomTkinter)
 
+Mac Download: [https://github.com/Darkshadogt/Dark-Music-Player/releases/tag/v1.0.0-Mac](https://github.com/Darkshadogt/Dark-Music-Player/releases/tag/v1.0.0-Mac)
+
 ![Screen Shot 2023-05-09 at 5 46 07 PM](https://github.com/Darkshadogt/Dark-Music-Player/assets/122583206/59c0f971-697a-4cde-b56b-5efc306fd6e7)
 
 **Note: Might look differently depends on your settings**
