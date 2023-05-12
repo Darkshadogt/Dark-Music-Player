@@ -46,12 +46,10 @@ class MusicPlayer(GUI.Interface):
             if self.current_song not in self.playlists[self.playlist_selection.get()]:
                 self.current_song = self.playlists[self.playlist_selection.get()][0]
             
-            self.current_song_word_label.configure(text=self.current_song[0])
-            
             #Changing the to value of the slider to the length of the song
             song_length = MusicPlayer.song_length(self)
             self.time_slider.configure(to=song_length)
-            
+            self.current_song_label_change()
             #Checking if user put repeats on
             if (self.shuffle_on == True and self.repeat_on == True) or self.repeat_on == True:
                 #Checks if the music got paused 
